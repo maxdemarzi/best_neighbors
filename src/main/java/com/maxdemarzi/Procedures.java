@@ -11,8 +11,6 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.stream.Stream;
 
-import static java.util.Collections.addAll;
-
 public class Procedures {
 
 
@@ -26,20 +24,26 @@ public class Procedures {
     @Context
     public Log log;
 
-    private static final Pair<ArrayList<Node>, Double> DUMMY_PAIR = Pair.of(new ArrayList<Node>(), 99999.99);
-
 
     @Procedure(name = "com.maxdemarzi.best_neighbors", mode = Mode.READ)
     @Description("CALL com.maxdemarzi.best_neighbors(Node start, Number n, Number hops)")
-    public Stream<SimplifiedWeightedPathResult> bestNeighbors(@Name("start") Node start, @Name("n") Number n, @Name("hops") Number hops) throws IOException {
+    public Stream<NodesAndCostResult> bestNeighbors(@Name("start") Node start, @Name("n") Number n, @Name("hops") Number hops) throws IOException {
         HashMap<Node, Pair<ArrayList<Node>, Double>> nodePathMap = new HashMap<>();
 
         // First Hop
         for(Relationship r : start.getRelationships(RelationshipTypes.to)) {
             Node next = r.getOtherNode(start);
-            Double weight = nodePathMap.getOrDefault(next, DUMMY_PAIR).other();
-            Double cost = ((Number)r.getProperty("count", 0.0)).doubleValue();
-            if (weight > cost) {
+            if(nodePathMap.containsKey(next)){
+                Double weight = nodePathMap.get(next).other();
+                Double cost = ((Number)r.getProperty("count", 0.0)).doubleValue();
+                if (weight > cost) {
+                    nodePathMap.put(next, Pair.of(new ArrayList<Node>() {{
+                        add(start);
+                        add(next);
+                    }}, cost));
+                }
+            } else {
+                Double cost = ((Number)r.getProperty("count", 0.0)).doubleValue();
                 nodePathMap.put(next, Pair.of(new ArrayList<Node>(){{add(start); add(next); }}, cost));
             }
         }
@@ -51,7 +55,7 @@ public class Procedures {
         ArrayList<Entry<Node, Pair<ArrayList<Node>, Double>>> list = new ArrayList<>(nodePathMap.entrySet());
         list.sort(Comparator.comparing(o -> o.getValue().other()));
 
-        return list.subList(0, Math.min(list.size(), n.intValue())).stream().map(x -> new SimplifiedWeightedPathResult(x.getValue().first(), x.getValue().other()));
+        return list.subList(0, Math.min(list.size(), n.intValue())).stream().map(x -> new NodesAndCostResult(x.getValue().first(), x.getValue().other()));
     }
 
     private void nextHop(@Name("n") Number n, HashMap<Node, Pair<ArrayList<Node>, Double>> nodePathMap) {

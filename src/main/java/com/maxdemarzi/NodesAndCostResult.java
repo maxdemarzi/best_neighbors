@@ -4,17 +4,17 @@ import org.neo4j.graphdb.Node;
 
 import java.util.List;
 
-public class SimplifiedWeightedPathResult implements Comparable<SimplifiedWeightedPathResult> {
+public class NodesAndCostResult implements Comparable<NodesAndCostResult> {
     public List<Node> nodes;
     public Double cost;
 
-    public SimplifiedWeightedPathResult(List<Node> nodes, Double cost) {
+    public NodesAndCostResult(List<Node> nodes, Double cost) {
         this.nodes = nodes;
         this.cost = cost;
     }
 
     @Override
-    public int compareTo(SimplifiedWeightedPathResult result) {
+    public int compareTo(NodesAndCostResult result) {
         return this.cost.compareTo(result.cost);
     }
 }

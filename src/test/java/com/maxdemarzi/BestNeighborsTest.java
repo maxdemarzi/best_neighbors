@@ -18,7 +18,7 @@ public class BestNeighborsTest {
 
 
     @Test
-    public void shouldFindNeighbors() throws Throwable
+    public void shouldFindBestNeighbors() throws Throwable
     {
         // In a try-block, to make sure we close the driver after the test
         try( Driver driver = GraphDatabase.driver( neo4j.boltURI() , Config.build().withoutEncryption().toConfig() ) )
